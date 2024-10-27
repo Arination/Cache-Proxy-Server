@@ -1,3 +1,3 @@
 # Python-Pro
 
-##{Hacktober Fest}
+## Hacktober Fest
