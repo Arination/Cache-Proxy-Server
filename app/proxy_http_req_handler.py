@@ -1,6 +1,7 @@
 import requests
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, urljoin, parse_qs
+import ast
 
 
 class ProxyHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -26,12 +27,19 @@ class ProxyHTTPRequestHandler(BaseHTTPRequestHandler):
 
         cache_key = self.proxy_cache.generate_key(parsed_path.path)
         cached_entry = self.proxy_cache.get(cache_key)
+        print(type(cached_entry))
+        # print(cached_entry)
 
         if cached_entry:
             print("Cache hit")
+            cached_entry = cached_entry.decode("UTF-8")
+            print("Cached Entry: ", type(cached_entry)) # String type
+            mydata = ast.literal_eval(cached_entry)
+            print("My Data: ", type(mydata)) # List type
+            print(mydata)
             response_data, cached_headers = (
-                cached_entry["response"],
-                cached_entry["headers"],
+                mydata["response"],
+                mydata["headers"],
             )
             self.send_response(200)
             self.send_caching_headers(cached_headers, from_cache=True)
