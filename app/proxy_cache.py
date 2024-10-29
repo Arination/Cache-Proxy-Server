@@ -19,7 +19,7 @@ class ProxyCache:
         """
         entry = self.cache.get(key)
         if entry and time.time() < entry["expiry"]:
-            return entry["response"]
+            return entry
         return None
 
     def set(self, key, response, headers):
