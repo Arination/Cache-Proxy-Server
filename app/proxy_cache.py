@@ -6,6 +6,10 @@ class ProxyCache:
     def __init__(self, expiration=300):
         self.expiration = expiration
         self.cache = {}
+        
+    def clear_cache(self): 
+        self.cache.clear()
+        print("Cache cleared")
 
     def generate_key(self, path):
         """
