@@ -25,15 +25,10 @@ def cli(ctx, port, expiration, origin):
 
     ProxyHTTPRequestHandler.proxy_cache = ProxyCache(expiration)
     ProxyHTTPRequestHandler.origin = origin
-    server = HTTPServer(("localhost", port), ProxyHTTPRequestHandler)
+    server = HTTPServer(("127.0.0.1", port), ProxyHTTPRequestHandler)
 
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         print("Shutting down server...")
         server.server_close()
-
-
-@cli.command()
-def start():
-    pass
