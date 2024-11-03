@@ -27,6 +27,6 @@ setup(
     ],
     entry_points="""
         [console_scripts]
-        caching-proxy=caching_proxy:cli
+        caching-proxy=caching_proxy:main
     """,
 )

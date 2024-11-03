@@ -43,9 +43,12 @@ class ProxyHTTPRequestHandler(BaseHTTPRequestHandler):
 
         print("Cache miss, forwarding request")
         response = self.forward_request(target_url, params)
+        print(type(response))
         print("Response: ", response)
+        
+        content = response["content"].decode("utf-8")
 
-        self.proxy_cache.set(cache_key, response["content"], dict(response["headers"]))
+        self.proxy_cache.set(cache_key, content, dict(response["headers"]))
 
         # Send response to client
         self.send_response(response["status_code"])
