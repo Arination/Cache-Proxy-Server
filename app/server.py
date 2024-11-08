@@ -50,10 +50,8 @@ class ProxyServer:
             self.remove_lock()
 
     def clear_server_cache(self):
-        if self.proxy_cache:
-            self.proxy_cache.clear_cache()
-        else:
-            print("No cache instance found.")
+        proxy_cache = ProxyCache()
+        proxy_cache.clear_cache()
 
     def stop_server(self):
         try:
