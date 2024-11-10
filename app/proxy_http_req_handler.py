@@ -2,7 +2,6 @@ import http, ssl
 from http.server import SimpleHTTPRequestHandler
 from urllib.parse import urlparse, urljoin, parse_qs, urlsplit
 import gzip, zlib
-from io import BytesIO
 
 
 class ProxyHTTPRequestHandler(SimpleHTTPRequestHandler):
