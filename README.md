@@ -2,6 +2,8 @@
 
 This is a simple caching proxy server CLI tool built with Python and Click. The server forwards requests to a specified origin server, caches the responses, and returns cached responses for duplicate requests. This can help reduce load on the origin server and improve response times for repeat requests.
 
+Project URL: https://github.com/Puru80/Python-Pro
+
 ## Features
 
 - **Request Forwarding**: Forwards client requests to a specified origin server.
