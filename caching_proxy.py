@@ -1,9 +1,9 @@
 import click
 from app.server import ProxyServer
+import asyncio
 
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
-
 
 @click.group(context_settings=CONTEXT_SETTINGS)
 @click.pass_context
@@ -25,15 +25,14 @@ def start(obj, port, expiration, origin, clear_cache):
         obj.clear_server_cache()
         return
 
-    proxy_server = ProxyServer()
-
-    proxy_server.run_server(port, expiration, origin)
+    asyncio.run(obj.start_server_async(port, expiration, origin))
 
 
 @cli.command("stop", help="Stop the proxy server")
 @click.pass_obj
 def stop_server(obj):
-    obj.stop_server()
+
+    asyncio.run(obj.stop_server_async())
 
 def main():
     cli(obj = ProxyServer())
