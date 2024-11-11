@@ -3,12 +3,12 @@ from app.proxy_cache import ProxyCache
 from app.proxy_http_req_handler import ProxyHTTPRequestHandler
 import os, signal, sys
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 
 class ProxyServer: 
     PID_FILE = "proxy_server.pid"
     LOCK_FILE = "proxy_server.lock"
-    # proxy_server_pid = None
 
     def create_lock(self):
         """Creates a lock file to prevent multiple instances."""
@@ -23,33 +23,6 @@ class ProxyServer:
         if os.path.exists(self.LOCK_FILE):
             os.remove(self.LOCK_FILE)
 
-    def run_server(self, port, expiration, origin):
-        self.proxy_cache = ProxyCache(expiration)
-        ProxyHTTPRequestHandler.proxy_cache = self.proxy_cache
-        ProxyHTTPRequestHandler.origin = origin
-
-        server = HTTPServer(("127.0.0.1", port), ProxyHTTPRequestHandler)
-
-        # Save the server's PID to a file
-        with open(self.PID_FILE, "w") as f:
-            f.write(str(os.getpid()))
-
-        self.create_lock()
-
-        try:
-            print(f"Starting caching proxy server on port {port}")
-            print(f"Origin server: {origin}")
-            print(f"Cache expiration: {expiration} seconds")
-            server.serve_forever()
-
-        # TODO: Fix this exception handling
-        except KeyboardInterrupt:
-            print("Shutting down server...")
-            self.stop_server()
-        finally:
-            print("Server has been stopped.")
-            self.remove_lock()
-
     async def start_server_async(self, port, expiration, origin):
         """Start the server asynchronously and run it as a background task."""
         # Define the server
@@ -59,23 +32,20 @@ class ProxyServer:
 
         self.server = HTTPServer(("127.0.0.1", port), ProxyHTTPRequestHandler)
 
-        # Run the server in a background task
-        self.server_task = asyncio.create_task(self.run_server_async())
-        print(f"Server started on port {port} in background mode")
+        # Save the server's PID to a file
+        with open(self.PID_FILE, "w") as f:
+            f.write(str(os.getpid()))
 
-    async def run_server_async(self):
+        self.create_lock()
+
+        self.server.serve_forever()
+        print(f"Started caching proxy server on port {port}")
+
+    async def run_server_async(self, port, expiration, origin):
         """Run the HTTP server asynchronously."""
         loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, self.server.serve_forever)
-
-    async def stop_server_async(self):
-        """Stop the running server."""
-        if self.server_task and not self.server_task.done():
-            print("Stopping server...")
-            self.server.shutdown()  # Stop the HTTP server
-            await self.server_task  # Await the server task to finish
-            self.server_task = None
-            print("Server stopped")
+        self.server_task = asyncio.create_task(self.start_server_async(port, expiration, origin))
+        await loop.run_forever()
 
     def clear_server_cache(self):
         proxy_cache = ProxyCache()
