@@ -2,12 +2,13 @@ from http.server import HTTPServer
 from app.proxy_cache import ProxyCache
 from app.proxy_http_req_handler import ProxyHTTPRequestHandler
 import os, signal, sys
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 
 class ProxyServer: 
     PID_FILE = "proxy_server.pid"
     LOCK_FILE = "proxy_server.lock"
-    # proxy_server_pid = None
 
     def create_lock(self):
         """Creates a lock file to prevent multiple instances."""
@@ -22,12 +23,14 @@ class ProxyServer:
         if os.path.exists(self.LOCK_FILE):
             os.remove(self.LOCK_FILE)
 
-    def run_server(self, port, expiration, origin):
+    async def start_server_async(self, port, expiration, origin):
+        """Start the server asynchronously and run it as a background task."""
+        # Define the server
         self.proxy_cache = ProxyCache(expiration)
         ProxyHTTPRequestHandler.proxy_cache = self.proxy_cache
         ProxyHTTPRequestHandler.origin = origin
 
-        server = HTTPServer(("127.0.0.1", port), ProxyHTTPRequestHandler)
+        self.server = HTTPServer(("127.0.0.1", port), ProxyHTTPRequestHandler)
 
         # Save the server's PID to a file
         with open(self.PID_FILE, "w") as f:
@@ -35,19 +38,14 @@ class ProxyServer:
 
         self.create_lock()
 
-        try:
-            print(f"Starting caching proxy server on port {port}")
-            print(f"Origin server: {origin}")
-            print(f"Cache expiration: {expiration} seconds")
-            server.serve_forever()
+        self.server.serve_forever()
+        print(f"Started caching proxy server on port {port}")
 
-        # TODO: Fix this exception handling
-        except KeyboardInterrupt:
-            print("Shutting down server...")
-            self.stop_server()
-        finally:
-            print("Server has been stopped.")
-            self.remove_lock()
+    async def run_server_async(self, port, expiration, origin):
+        """Run the HTTP server asynchronously."""
+        loop = asyncio.get_event_loop()
+        self.server_task = asyncio.create_task(self.start_server_async(port, expiration, origin))
+        await loop.run_forever()
 
     def clear_server_cache(self):
         proxy_cache = ProxyCache()
